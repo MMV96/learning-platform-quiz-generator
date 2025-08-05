@@ -71,7 +71,6 @@ async def list_quizzes(
     offset: int = Query(0, ge=0, description="Number of quizzes to skip")
 ):
     try:
-        logger.error("test1234567")
         result = await quiz_service.list_quizzes(book_id, limit, offset)
         return result
     except Exception as e:
