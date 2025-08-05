@@ -20,11 +20,10 @@ COPY requirements.txt .
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy .env for default config (will be overridden by volume mount in compose)
-COPY .env .env 
-
-# For development, run as root to avoid permission issues with volume mounts
-# TODO: Use non-root user in production
+# Create non-root user for security
+RUN groupadd -r appuser && useradd -r -g appuser appuser
+RUN chown -R appuser:appuser /app
+USER appuser
 
 # Expose port
 EXPOSE 8002
