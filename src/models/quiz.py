@@ -32,7 +32,7 @@ class Question(BaseModel):
 
 class Quiz(BaseModel):
     book_id: str = Field(..., description="Reference to source book")
-    questions: List[Question] = Field(..., min_items=1, max_items=20)
+    questions: List[Question] = Field(..., min_length=1, max_length=20)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     ai_model: str = Field(..., description="AI model used for generation")
     generation_prompt: Optional[str] = Field(None, description="Prompt used")
@@ -41,5 +41,4 @@ class Quiz(BaseModel):
 class QuizDocument(Quiz):
     id: Optional[str] = Field(None, alias="_id")
     
-    class Config:
-        populate_by_name = True
+    model_config = {"populate_by_name": True}

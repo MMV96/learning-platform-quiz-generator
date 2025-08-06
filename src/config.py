@@ -17,8 +17,9 @@ class Settings(BaseSettings):
     # AI Configuration
     default_ai_model: str = "claude-3-5-haiku-20241022"
     
-    class Config:
-        env_file = ".env"
-        case_sensitive = False
+    model_config = {
+        "env_file": ".env",
+        "case_sensitive": False
+    }
 
 settings = Settings()
