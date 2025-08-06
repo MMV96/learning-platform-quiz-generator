@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import List, Optional, Dict, Any, Union
 from pydantic import BaseModel, Field, field_validator
-from datetime import datetime
+from datetime import datetime, timezone
 
 class QuestionType(str, Enum):
     MULTIPLE_CHOICE = "multiple_choice"
@@ -33,7 +33,7 @@ class Question(BaseModel):
 class Quiz(BaseModel):
     book_id: str = Field(..., description="Reference to source book")
     questions: List[Question] = Field(..., min_length=1, max_length=20)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     ai_model: str = Field(..., description="AI model used for generation")
     generation_prompt: Optional[str] = Field(None, description="Prompt used")
     metadata: Optional[Dict[str, Any]] = Field(default_factory=dict)
