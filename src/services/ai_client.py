@@ -9,33 +9,42 @@ from ..models.requests import QuizOptions
 logger = logging.getLogger(__name__)
 
 QUIZ_GENERATION_PROMPT_TEMPLATE = """
-Genera un quiz educativo basato sul contenuto fornito. Rispondi SOLO con JSON valido, senza altre parole.
+Generate an educational quiz based on the provided content. Respond ONLY with valid JSON, no other text.
 
-CONTENUTO: {content}
+CONTENT: {content}
 
-PARAMETRI:
-- Numero domande: {num_questions}
-- Difficoltà: {difficulty_distribution}  
-- Tipi: {question_types}
-- Lingua: {language}
+PARAMETERS:
+- Number of questions: {num_questions}
+- Difficulty distribution: {difficulty_distribution}  
+- Question types: {question_types}
+- Language: {language}
 
-Formato JSON richiesto:
+INSTRUCTIONS:
+1. Create questions that test understanding, not just memorization
+2. Ensure questions are clear, unambiguous, and well-structured
+3. For multiple choice questions, provide 4 plausible options with only one correct answer
+4. Include detailed explanations that help learners understand the concept
+5. Vary the difficulty according to the specified distribution
+6. Cover different aspects and topics from the provided content
+7. Make sure all questions are in the specified language
+
+Required JSON format:
 {{
   "questions": [
     {{
-      "question": "Testo domanda?",
+      "question": "Question text?",
       "type": "multiple_choice",
-      "correct_answer": "Risposta corretta",
-      "options": ["A", "B", "C", "D"],
-      "explanation": "Spiegazione dettagliata",
+      "correct_answer": "Correct answer text",
+      "options": ["Option A", "Option B", "Option C", "Option D"],
+      "explanation": "Detailed explanation of why this answer is correct and why others are incorrect",
       "difficulty": "easy",
-      "topic": "Argomento",
-      "concepts_tested": ["Concetto1", "Concetto2"]
+      "topic": "Specific topic or subject area",
+      "concepts_tested": ["Concept1", "Concept2"]
     }}
   ]
 }}
 
-IMPORTANTE: Rispondi SOLO con il JSON, nient'altro."""
+IMPORTANT: Respond ONLY with the JSON structure above, nothing else. Ensure all text is in the requested language."""
 
 class AIClientService:
     def __init__(self):
