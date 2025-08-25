@@ -5,7 +5,7 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     # Service Configuration
     service_name: str = "quiz-generator"
-    service_port: int = 8002
+    service_port: int = 80
     environment: str = "development"
     
     # Database

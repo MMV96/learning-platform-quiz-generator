@@ -67,7 +67,7 @@ cp .env.example .env
 ### 5. Avvia il servizio
 ```bash
 # Sviluppo
-uvicorn src.main:app --host 0.0.0.0 --port 8002 --reload
+uvicorn src.main:app --host 0.0.0.0 --port 80 --reload
 
 # Produzione
 python -m src.main
@@ -82,7 +82,7 @@ docker build -t quiz-generator .
 
 ### Esecuzione del container
 ```bash
-docker run -p 8002:8002 --env-file .env quiz-generator
+docker run -p 80:80 --env-file .env quiz-generator
 ```
 
 ## 🔌 API Endpoints
@@ -169,7 +169,6 @@ Le configurazioni sono gestite tramite variabili d'ambiente:
 ```bash
 # Service Configuration
 SERVICE_NAME=quiz-generator
-SERVICE_PORT=8002
 ENVIRONMENT=development
 
 # Database
@@ -189,7 +188,7 @@ DEFAULT_AI_MODEL=claude-3-sonnet-20240229
 pytest
 
 # Test manual con curl
-curl -X POST "http://localhost:8002/generate-quiz" \
+curl -X POST "http://localhost/generate-quiz" \
   -H "Content-Type: application/json" \
   -d '{
     "content": "Il machine learning è una branca dell intelligenza artificiale...",
