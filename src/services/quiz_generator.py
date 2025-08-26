@@ -1,5 +1,6 @@
 import time
 import logging
+import requests
 from typing import Dict, Any
 from ..models.quiz import Quiz
 from ..models.requests import QuizGenerationRequest, QuizGenerationResponse
@@ -13,15 +14,48 @@ class QuizGeneratorService:
     def __init__(self):
         pass
 
+    async def _fetch_document_content(self, document_id: str) -> str:
+        """Fetch document content from content-processor API"""
+        try:
+            url = f"{settings.content_processor_api_url}{document_id}"
+            response = requests.get(url, timeout=30)
+            response.raise_for_status()
+            
+            document_data = response.json()
+            content = document_data.get("content")
+            
+            if not content:
+                raise ValueError(f"Document {document_id} has no content")
+            
+            logger.info(f"Successfully fetched content for document {document_id}")
+            return content
+            
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Failed to fetch document {document_id} from content-processor: {e}")
+            raise ValueError(f"Failed to retrieve document content: {str(e)}")
+        except Exception as e:
+            logger.error(f"Error processing document content for {document_id}: {e}")
+            raise ValueError(f"Error processing document content: {str(e)}")
+
     async def generate_quiz(self, request: QuizGenerationRequest) -> QuizGenerationResponse:
         start_time = time.time()
         
         try:
             logger.info(f"Starting quiz generation for book_id: {request.book_id}")
             
+            # Get content - either from request or fetch from content-processor API
+            content = request.content
+            if not content:
+                logger.info(f"Content not provided, fetching from content-processor for document: {request.book_id}")
+                content = await self._fetch_document_content(request.book_id)
+            
+            # Validate content length
+            if len(content) < 100:
+                raise ValueError("Content must be at least 100 characters long")
+            
             # Generate questions using AI
             questions = await ai_service.generate_quiz_questions(
-                content=request.content,
+                content=content,
                 options=request.options
             )
             

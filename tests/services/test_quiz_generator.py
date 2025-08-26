@@ -46,6 +46,89 @@ class TestQuizGeneratorService:
         )
 
     @pytest.mark.asyncio
+    async def test_generate_quiz_fetch_content_success(self, quiz_service, sample_questions):
+        """Test generating quiz when content is not provided and must be fetched"""
+        # Create request without content
+        request_without_content = QuizGenerationRequest(
+            book_id="test-book-123",
+            metadata={"chapter": "1"},
+            options=QuizOptions(num_questions=2)
+        )
+        
+        # Mock content response from content-processor API
+        mock_response = MagicMock()
+        mock_response.json.return_value = {
+            "content": "Rome is the capital of Italy and its largest city. It is located in the central-western portion of the Italian Peninsula."
+        }
+        mock_response.raise_for_status.return_value = None
+        
+        with patch('src.services.quiz_generator.requests.get') as mock_requests_get, \
+             patch('src.services.quiz_generator.ai_service') as mock_ai_service, \
+             patch('src.services.quiz_generator.db_service') as mock_db_service, \
+             patch('src.services.quiz_generator.settings') as mock_settings:
+            
+            # Setup mocks
+            mock_requests_get.return_value = mock_response
+            mock_ai_service.generate_quiz_questions = AsyncMock(return_value=sample_questions)
+            mock_db_service.create_quiz = AsyncMock(return_value="quiz-12345")
+            mock_settings.default_ai_model = "claude-3-sonnet-20240229"
+            mock_settings.content_processor_api_url = "http://content-processor/documents/"
+            
+            # Execute
+            response = await quiz_service.generate_quiz(request_without_content)
+            
+            # Assertions
+            assert response.quiz_id == "quiz-12345"
+            assert response.questions_count == 2
+            assert response.ai_model_used == "claude-3-sonnet-20240229"
+            assert response.generation_time_seconds >= 0
+            
+            # Verify API call to content-processor
+            mock_requests_get.assert_called_once_with(
+                "http://content-processor/documents/test-book-123",
+                timeout=30
+            )
+            
+            # Verify service calls
+            mock_ai_service.generate_quiz_questions.assert_called_once()
+            mock_db_service.create_quiz.assert_called_once()
+
+    @pytest.mark.asyncio
+    async def test_generate_quiz_fetch_content_api_error(self, quiz_service):
+        """Test handling of content-processor API errors"""
+        request_without_content = QuizGenerationRequest(
+            book_id="test-book-123",
+            options=QuizOptions(num_questions=2)
+        )
+        
+        with patch('src.services.quiz_generator.requests.get') as mock_requests_get:
+            mock_requests_get.side_effect = Exception("API connection failed")
+            
+            with pytest.raises(ValueError, match="Error processing document content"):
+                await quiz_service.generate_quiz(request_without_content)
+
+    @pytest.mark.asyncio
+    async def test_generate_quiz_fetch_content_no_content(self, quiz_service):
+        """Test handling when fetched document has no content"""
+        request_without_content = QuizGenerationRequest(
+            book_id="test-book-123",
+            options=QuizOptions(num_questions=2)
+        )
+        
+        mock_response = MagicMock()
+        mock_response.json.return_value = {"content": None}
+        mock_response.raise_for_status.return_value = None
+        
+        with patch('src.services.quiz_generator.requests.get') as mock_requests_get, \
+             patch('src.services.quiz_generator.settings') as mock_settings:
+            
+            mock_requests_get.return_value = mock_response
+            mock_settings.content_processor_api_url = "http://content-processor/documents/"
+            
+            with pytest.raises(ValueError, match="Document test-book-123 has no content"):
+                await quiz_service.generate_quiz(request_without_content)
+
+    @pytest.mark.asyncio
     async def test_generate_quiz_success(self, quiz_service, sample_request, sample_questions):
         # Mock dependencies
         with patch('src.services.quiz_generator.ai_service') as mock_ai_service, \

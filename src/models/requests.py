@@ -3,7 +3,7 @@ from pydantic import BaseModel, Field
 from .quiz import DifficultyLevel, QuestionType
 
 class QuizGenerationRequest(BaseModel):
-    content: str = Field(..., min_length=100, description="Text content to generate quiz from")
+    content: Optional[str] = Field(None, min_length=100, description="Text content to generate quiz from. If not provided, will be fetched using book_id")
     book_id: str = Field(..., description="Book ID reference")
     metadata: Optional[Dict[str, Any]] = Field(default_factory=dict)
     options: Optional["QuizOptions"] = Field(default_factory=lambda: QuizOptions())

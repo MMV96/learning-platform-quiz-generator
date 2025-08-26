@@ -48,6 +48,9 @@ async def generate_quiz(request: QuizGenerationRequest):
         logger.info(f"Received quiz generation request for book_id: {request.book_id}")
         response = await quiz_service.generate_quiz(request)
         return response
+    except ValueError as e:
+        logger.warning(f"Validation error generating quiz: {e}")
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         logger.error(f"Error generating quiz: {e}")
         raise HTTPException(status_code=500, detail=str(e))

@@ -1,5 +1,3 @@
-import os
-from typing import Optional
 from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
@@ -10,6 +8,9 @@ class Settings(BaseSettings):
     
     # Database
     mongodb_url: str = "mongodb://admin:password123@localhost:27017/learning_platform?authSource=admin"
+    
+    # Content Processor API
+    content_processor_api_url: str = "http://content-processor/documents/"
     
     # AI API Keys
     anthropic_api_key: str = ""

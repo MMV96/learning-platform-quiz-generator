@@ -76,6 +76,11 @@ class TestQuizGenerationRequest:
                 book_id="book-123"
             )
 
+    def test_request_without_content(self):
+        request = QuizGenerationRequest(book_id="book-123")
+        assert request.content is None
+        assert request.book_id == "book-123"
+
     def test_request_validation_missing_book_id(self):
         with pytest.raises(ValidationError):
             QuizGenerationRequest(
